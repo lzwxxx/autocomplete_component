@@ -2,112 +2,126 @@ import React, { useState } from "react";
 import Autocomplete from "./components/Autocomplete";
 
 const options = [
-  "Singapore Dollar (SGD)",
-  "US Dollar (USD)",
-  "Euro (EUR)",
-  "British Pound (GBP)",
-  "Japanese Yen (JPY)",
-  "Australian Dollar (AUD)",
-  "Canadian Dollar (CAD)",
-  "Swiss Franc (CHF)",
-  "Chinese Yuan (CNY)",
-  "Indian Rupee (INR)",
-  "Brazilian Real (BRL)",
-  "South African Rand (ZAR)",
-  "Mexican Peso (MXN)",
-  "Russian Ruble (RUB)",
-  "New Zealand Dollar (NZD)",
-  "Hong Kong Dollar (HKD)",
-  "Norwegian Krone (NOK)",
-  "Swedish Krona (SEK)",
-  "Turkish Lira (TRY)",
-  "Saudi Riyal (SAR)",
-  "United Arab Emirates Dirham (AED)",
-  "South Korean Won (KRW)",
-  "Taiwan Dollar (TWD)",
-  "Malaysian Ringgit (MYR)",
-  "Indonesian Rupiah (IDR)",
-  "Philippine Peso (PHP)",
-  "Vietnamese Dong (VND)"
+  { label: "Singapore Dollar", value: "SGD", description: "Currency of Singapore" },
+  { label: "US Dollar", value: "USD", description: "Currency of the United States" },
+  { label: "Euro", value: "EUR", description: "Currency of the Eurozone" },
+  { label: "British Pound", value: "GBP", description: "Currency of the United Kingdom" },
+  { label: "Japanese Yen", value: "JPY", description: "Currency of Japan" },
+  { label: "Australian Dollar", value: "AUD", description: "Currency of Australia" },
+  { label: "Canadian Dollar", value: "CAD", description: "Currency of Canada" },
+  { label: "Swiss Franc", value: "CHF", description: "Currency of Switzerland" },
+  { label: "Chinese Yuan", value: "CNY", description: "Currency of China" },
+  { label: "Indian Rupee", value: "INR", description: "Currency of India" },
+  { label: "Brazilian Real", value: "BRL", description: "Currency of Brazil" },
+  { label: "South African Rand", value: "ZAR", description: "Currency of South Africa" },
+  { label: "Mexican Peso", value: "MXN", description: "Currency of Mexico" },
+  { label: "Russian Ruble", value: "RUB", description: "Currency of Russia" },
+  { label: "New Zealand Dollar", value: "NZD", description: "Currency of New Zealand" },
+  { label: "Hong Kong Dollar", value: "HKD", description: "Currency of Hong Kong" },
+  { label: "Norwegian Krone", value: "NOK", description: "Currency of Norway" },
+  { label: "Swedish Krona", value: "SEK", description: "Currency of Sweden" },
+  { label: "Turkish Lira", value: "TRY", description: "Currency of Turkey" },
+  { label: "Saudi Riyal", value: "SAR", description: "Currency of Saudi Arabia" },
+  { label: "United Arab Emirates Dirham", value: "AED", description: "Currency of the UAE" },
+  { label: "South Korean Won", value: "KRW", description: "Currency of South Korea" },
+  { label: "Taiwan Dollar", value: "TWD", description: "Currency of Taiwan" },
+  { label: "Malaysian Ringgit", value: "MYR", description: "Currency of Malaysia" },
+  { label: "Indonesian Rupiah", value: "IDR", description: "Currency of Indonesia" },
+  { label: "Philippine Peso", value: "PHP", description: "Currency of the Philippines" },
+  { label: "Vietnamese Dong", value: "VND", description: "Currency of Vietnam" },
 ];
 
-
 function App() {
-  const [selected, setSelected] = useState<
-    | string
-    | { label: string; value: string }
-    | (string | { label: string; value: string })[]
+  const [selectedClick, setSelectedClick] = useState<
+    { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
   >([]);
-  const [displaySelected, setDisplaySelected] = useState<string[]>([]);
-  const [isMultiple, setIsMultiple] = useState(true); // to toggle btw multiple and single selection
 
-  const handleSelectionChange = (
-    newSelection:
-      | string
-      | { label: string; value: string }
-      | (string | { label: string; value: string })[]
+  const [selectedTyping, setSelectedTyping] = useState<
+    { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
+  >([]);
+
+  const [loadingClick, setLoadingClick] = useState(false);
+  
+  const [loadingTyping, setLoadingTyping] = useState(false);
+
+  const handleSelectionChangeClick = (
+    newSelection: { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
   ) => {
-    setSelected(newSelection);
-
-    if (isMultiple) {
-      if (Array.isArray(newSelection)) {
-        // to handle the case where the newSelection is an array
-        const labels = newSelection.map((item) =>
-          typeof item === "string" ? item : (item as { label: string }).label
-        );
-        setDisplaySelected(labels);
-      } else {
-        // to handle the case where it is in single mode; shouldnt happen in mutliple modeee
-        setDisplaySelected([
-          typeof newSelection === "string"
-            ? newSelection
-            : (newSelection as { label: string }).label,
-        ]);
-      }
-    } else {
-      // this is for single selection
-      setDisplaySelected([
-        typeof newSelection === "string"
-          ? newSelection
-          : (newSelection as { label: string }).label,
-      ]);
-    }
+    setSelectedClick(newSelection);
   };
 
-  const handleToggleSelectionMode = () => {
-    // this is to the clear the selection and display when its in the toggling mode
-    setSelected([]);
-    setDisplaySelected([]);
-    setIsMultiple(!isMultiple);
+  const handleSelectionChangeTyping = (
+    newSelection: { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
+  ) => {
+    setSelectedTyping(newSelection);
+  };
+
+  const handleInputChangeClick = (inputValue: string) => {
+    setLoadingClick(true);
+    console.log("Click-based input change:", inputValue);
+    setTimeout(() => {
+      setLoadingClick(false);
+    }, 1000);
+  };
+
+  const handleInputChangeTyping = (inputValue: string) => {
+    setLoadingTyping(true);
+    console.log("Typing-based input change:", inputValue);
+    setTimeout(() => {
+      setLoadingTyping(false);
+    }, 1000);
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="flex p-10 shadow-2xl rounded-lg bg-white">
-        <div className="flex flex-col mr-6">
-          <h1 className="text-2xl mb-4">Autocomplete</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="flex flex-col md:flex-row p-4 md:p-10 shadow-2xl rounded-lg bg-white w-full">
+        {/* Typing */}
+        <div className="flex flex-col w-full mb-4 md:mb-0 md:mr-4">
           <Autocomplete
-            label="Search"
+            label="Async Search"
+            description="Custom results display"
             options={options}
-            value={selected}
-            onChange={handleSelectionChange}
-            multiple={isMultiple}
+            value={selectedTyping}
+            onChange={handleSelectionChangeTyping}
+            onInputChange={handleInputChangeTyping}
+            multiple={true}
+            showOnTypingOnly={true}
+            loading={loadingTyping}
           />
-          <button
-            onClick={handleToggleSelectionMode}
-            className="mt-4 p-2 bg-blue-500 text-white rounded"
-          >
-            Toggle {isMultiple ? "Single" : "Multiple"} Selection
-          </button>
+          <h2 className="text-xl mt-4">Selected Items:</h2>
+          <ul className="list-disc list-inside">
+            {Array.isArray(selectedTyping) && selectedTyping.length > 0 ? (
+              selectedTyping.map((item, index) => (
+                <li key={index}>
+                  {typeof item === "string" ? item : (item as { label: string }).label}
+                </li>
+              ))
+            ) : (
+              <p>No items selected</p>
+            )}
+          </ul>
         </div>
 
-        <div className="flex flex-col">
-          <h2 className="text-xl mb-2">
-            {isMultiple ? "Selected Items:" : "Selected Item:"}
-          </h2>
+        {/* Click */}
+        <div className="flex flex-col w-full">
+          <Autocomplete
+            label="Sync Search"
+            description="Dropdown and search on focus"
+            options={options}
+            value={selectedClick}
+            onChange={handleSelectionChangeClick}
+            onInputChange={handleInputChangeClick}
+            multiple={true}
+            loading={loadingClick}
+          />
+          <h2 className="text-xl mt-4">Selected Items:</h2>
           <ul className="list-disc list-inside">
-            {displaySelected.length > 0 ? (
-              displaySelected.map((item, index) => <li key={index}>{item}</li>)
+            {Array.isArray(selectedClick) && selectedClick.length > 0 ? (
+              selectedClick.map((item, index) => (
+                <li key={index}>
+                  {typeof item === "string" ? item : (item as { label: string }).label}
+                </li>
+              ))
             ) : (
               <p>No items selected</p>
             )}

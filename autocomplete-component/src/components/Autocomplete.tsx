@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useFloating, offset, shift } from "@floating-ui/react-dom";
 
 interface AutocompleteProps<T> {
   label: string;
+  description?: string;
   options: T[];
   value: T | T[];
   onChange: (value: T | T[]) => void;
+  onInputChange?: (inputValue: string) => void;
   placeholder?: string;
   disabled?: boolean;
   multiple?: boolean;
@@ -17,13 +19,16 @@ interface AutocompleteProps<T> {
     onSelect: () => void
   ) => JSX.Element;
   debounceTime?: number;
+  showOnTypingOnly?: boolean;
 }
 
-function Autocomplete<T extends string | { label: string; value: any }>({
+function Autocomplete<T extends { label: string; value: any; description?: string }>({
   label,
+  description,
   options,
   value,
   onChange,
+  onInputChange,
   placeholder = "Search...",
   disabled = false,
   multiple = false,
@@ -31,6 +36,7 @@ function Autocomplete<T extends string | { label: string; value: any }>({
   filterOptions,
   renderOption,
   debounceTime = 300,
+  showOnTypingOnly = false,
 }: AutocompleteProps<T>) {
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -50,17 +56,18 @@ function Autocomplete<T extends string | { label: string; value: any }>({
         const filtered = filterOptions
           ? filterOptions(inputValue, options)
           : options.filter((option) =>
-              typeof option === "string"
-                ? option.toLowerCase().includes(inputValue.toLowerCase())
-                : option.label.toLowerCase().includes(inputValue.toLowerCase())
+              option.label.toLowerCase().includes(inputValue.toLowerCase())
             );
         setFilteredOptions(filtered);
         setHighlightedIndex(0);
+        if (showOnTypingOnly) {
+          setIsOpen(inputValue.length > 0);
+        }
       }
     }, debounceTime);
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue, options, filterOptions, debounceTime, loading]);
+  }, [inputValue, options, filterOptions, debounceTime, loading, showOnTypingOnly]);
 
   const handleSelect = (option: T) => {
     if (multiple) {
@@ -141,19 +148,31 @@ function Autocomplete<T extends string | { label: string; value: any }>({
       <label className="block mb-2 text-sm font-medium text-gray-700">
         {label}
       </label>
+      {description && <p className="text-sm text-gray-500 mb-2">{description}</p>}
       <div ref={refs.setReference} className="relative">
         <input
           ref={inputRef}
           type="text"
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onFocus={() => setIsOpen(true)}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            setInputValue(newValue);
+            if (!showOnTypingOnly) {
+              setIsOpen(true);
+            }
+            onInputChange?.(newValue);
+          }}
+          onFocus={() => {
+            if (!showOnTypingOnly) {
+              setIsOpen(true);
+            }
+          }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           className="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
-        {loading && <div className="spinner">Loading...</div>}
+        {loading && <div className="spinner"></div>}
         {isOpen && (
           <div
             ref={refs.setFloating}
@@ -170,7 +189,7 @@ function Autocomplete<T extends string | { label: string; value: any }>({
 
                   return (
                     <div
-                      key={index}
+                      key={option.value}
                       data-index={index}
                       onClick={() => handleSelect(option)}
                       className={`flex items-center p-2 cursor-pointer hover:bg-gray-200 ${
@@ -178,23 +197,26 @@ function Autocomplete<T extends string | { label: string; value: any }>({
                       } ${isHighlighted ? "bg-gray-300" : ""} text-black`}
                     >
                       {multiple && (
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleSelect(option);
-                          }}
-                          className="mr-2"
-                        />
+                        <div className="flex items-center justify-center w-8 h-8">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleSelect(option);
+                            }}
+                            className="form-checkbox"
+                          />
+                        </div>
                       )}
-                      {renderOption
-                        ? renderOption(option, isSelected, () =>
-                            handleSelect(option)
-                          )
-                        : typeof option === "string"
-                        ? option
-                        : option.label}
+                      <div className="flex flex-col ml-2">
+                        <div className="flex items-center">
+                          <span className="font-semibold mr-2">{option.label} ({option.value})</span>
+                        </div>
+                        {option.description && (
+                          <p className="text-xs text-gray-500 mt-1">{option.description}</p>
+                        )}
+                      </div>
                     </div>
                   );
                 })
