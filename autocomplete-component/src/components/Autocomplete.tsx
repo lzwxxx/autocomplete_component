@@ -50,6 +50,7 @@ function Autocomplete<T extends { label: string; value: any; description?: strin
     middleware: [offset(5), shift()],
   });
 
+  // to handle input changes and debounce filtering options
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!loading) {
@@ -69,6 +70,7 @@ function Autocomplete<T extends { label: string; value: any; description?: strin
     return () => clearTimeout(timeoutId);
   }, [inputValue, options, filterOptions, debounceTime, loading, showOnTypingOnly]);
 
+  // to handle the selection of an option
   const handleSelect = (option: T) => {
     if (multiple) {
       const newValue = Array.isArray(value)
@@ -83,6 +85,7 @@ function Autocomplete<T extends { label: string; value: any; description?: strin
     }
   };
 
+  // keyboard
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen) return;
 
@@ -117,6 +120,7 @@ function Autocomplete<T extends { label: string; value: any; description?: strin
     }
   };
 
+  // scroll
   const scrollToHighlighted = (index: number) => {
     const optionElement = dropdownRef.current?.querySelector(
       `div[data-index='${index}']`
@@ -124,6 +128,7 @@ function Autocomplete<T extends { label: string; value: any; description?: strin
     optionElement?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
+  // click outside to close the dropdown
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (
       dropdownRef.current &&
@@ -136,6 +141,7 @@ function Autocomplete<T extends { label: string; value: any; description?: strin
     }
   }, []);
 
+  // detect click outside the dropdown
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {

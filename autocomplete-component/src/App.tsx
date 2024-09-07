@@ -32,24 +32,31 @@ const options = [
 ];
 
 function App() {
+
+  // to store the selected options based on click
   const [selectedClick, setSelectedClick] = useState<
     { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
   >([]);
 
+  // to store the selected options based on typing
   const [selectedTyping, setSelectedTyping] = useState<
     { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
   >([]);
 
+  // track loading status for click 
   const [loadingClick, setLoadingClick] = useState(false);
   
+  // track loading status for typing
   const [loadingTyping, setLoadingTyping] = useState(false);
 
+  // for changing selected items in click
   const handleSelectionChangeClick = (
     newSelection: { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
   ) => {
     setSelectedClick(newSelection);
   };
 
+  // for changing selected items in typing
   const handleSelectionChangeTyping = (
     newSelection: { label: string; value: string; description?: string } | { label: string; value: string; description?: string }[]
   ) => {
@@ -74,8 +81,8 @@ function App() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="flex flex-col md:flex-row p-4 md:p-10 shadow-2xl rounded-lg bg-white w-full">
-        {/* Typing */}
+      <div className="flex flex-col md:flex-row p-4 md:p-10 shadow-2xl rounded-lg bg-white w-screen max-w-[700px]">
+        {/* typing */}
         <div className="flex flex-col w-full mb-4 md:mb-0 md:mr-4">
           <Autocomplete
             label="Async Search"
@@ -88,8 +95,8 @@ function App() {
             showOnTypingOnly={true}
             loading={loadingTyping}
           />
-          <h2 className="text-xl mt-4">Selected Items:</h2>
-          <ul className="list-disc list-inside">
+          <h2 className="text-sm mt-4">Selected Items:</h2>
+          <ul className="text-sm list-disc list-inside">
             {Array.isArray(selectedTyping) && selectedTyping.length > 0 ? (
               selectedTyping.map((item, index) => (
                 <li key={index}>
@@ -102,7 +109,7 @@ function App() {
           </ul>
         </div>
 
-        {/* Click */}
+        {/* click */}
         <div className="flex flex-col w-full">
           <Autocomplete
             label="Sync Search"
@@ -114,8 +121,8 @@ function App() {
             multiple={true}
             loading={loadingClick}
           />
-          <h2 className="text-xl mt-4">Selected Items:</h2>
-          <ul className="list-disc list-inside">
+          <h2 className="text-sm mt-4">Selected Items:</h2>
+          <ul className="text-sm list-disc list-inside">
             {Array.isArray(selectedClick) && selectedClick.length > 0 ? (
               selectedClick.map((item, index) => (
                 <li key={index}>
